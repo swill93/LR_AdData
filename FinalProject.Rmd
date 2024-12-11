@@ -1,0 +1,92 @@
+---
+title: "Impact of Advertising Channels on Product Sales"
+author: "Spenser Williams & Victoria Ceci"
+date: "2024-12-05"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(caret)
+Advertising_Data <- read.csv("~/Desktop/STAT 463/Advertising_Data.csv")
+
+```
+
+
+```{r}
+#Models for each individual channel
+model_tv <- lm(Product_Sold ~ TV, data = Advertising_Data)
+model_billboards <- lm(Product_Sold ~ Billboards, data = Advertising_Data)
+model_google <- lm(Product_Sold ~ Google_Ads, data = Advertising_Data)
+model_social <- lm(Product_Sold ~ Social_Media, data = Advertising_Data)
+model_influencer <- lm(Product_Sold ~ Influencer_Marketing, data = Advertising_Data)
+model_affiliate <- lm(Product_Sold ~ Affiliate_Marketing, data = Advertising_Data)
+
+summary(model_tv)
+summary(model_billboards)
+summary(model_google)
+summary(model_social)
+summary(model_influencer)
+summary(model_affiliate)
+
+#Extracting the coefficients for each channel
+coef_tv <- coef(model_tv)["TV"]
+coef_billboards <- coef(model_billboards)["Billboards"]
+coef_google <- coef(model_google)["Google_Ads"]
+coef_social <- coef(model_social)["Social_Media"]
+coef_influencer <- coef(model_influencer)["Influencer_Marketing"]
+coef_affiliate <- coef(model_affiliate)["Affiliate_Marketing"]
+
+channel_effects <- setNames(
+  c(coef_tv, coef_billboards, coef_google, coef_social, coef_influencer, coef_affiliate),
+  c("TV", "Billboards", "Google_Ads", "Social_Media", "Influencer_Marketing", "Affiliate_Marketing")
+)
+#individual coefficients for each marketing channel 
+print(channel_effects)
+
+par(mar = c(10, 4, 2, 0))
+
+#Plot comparing the coefficients of each marketing channel
+barplot(channel_effects, 
+        main = "Individual Effects of Marketing Channels on Sales",
+        ylab = "Coefficient Estimate",
+        col = "blue", 
+        las = 2)
+
+#Get predictions for R2 and RMSE
+predictions_tv <- predict(model_tv, newdata = Advertising_Data)
+predictions_billboards <- predict(model_billboards, newdata = Advertising_Data)
+predictions_google <- predict(model_google, newdata = Advertising_Data)
+predictions_social <- predict(model_social, newdata = Advertising_Data)
+predictions_influencer <- predict(model_influencer, newdata = Advertising_Data)
+predictions_affiliate <- predict(model_affiliate, newdata = Advertising_Data)
+
+#Data frame comparing the R2 and RMSE of each marketing channel
+metrics <- data.frame(
+  Channel = c("TV", "Billboards", "Google_Ads", "Social_Media", "Influencer_Marketing", "Affiliate_Marketing"),
+  R2 = c(
+    R2(predictions_tv, Advertising_Data$Product_Sold),
+    R2(predictions_billboards, Advertising_Data$Product_Sold),
+    R2(predictions_google, Advertising_Data$Product_Sold),
+    R2(predictions_social, Advertising_Data$Product_Sold),
+    R2(predictions_influencer, Advertising_Data$Product_Sold),
+    R2(predictions_affiliate, Advertising_Data$Product_Sold)
+  ),
+  RMSE = c(
+    RMSE(predictions_tv, Advertising_Data$Product_Sold),
+    RMSE(predictions_billboards, Advertising_Data$Product_Sold),
+    RMSE(predictions_google, Advertising_Data$Product_Sold),
+    RMSE(predictions_social, Advertising_Data$Product_Sold),
+    RMSE(predictions_influencer, Advertising_Data$Product_Sold),
+    RMSE(predictions_affiliate, Advertising_Data$Product_Sold)
+  )
+)
+
+print(metrics)
+```
